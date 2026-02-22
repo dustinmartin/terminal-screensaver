@@ -1,6 +1,6 @@
 # Terminal Screensaver
 
-A terminal-based screensaver that uses [TerminalTextEffects (TTE)](https://github.com/ChrisBuilds/terminaltexteffects) to display animated text effects in fullscreen Alacritty windows. It launches one window per monitor and dismisses on any keyboard or mouse input.
+A terminal-based screensaver adapted from [Omarchy](https://github.com/basecamp/omarchy) and modified to work on Ubuntu-based distros. Uses [TerminalTextEffects (TTE)](https://github.com/ChrisBuilds/terminaltexteffects) to display animated text effects in fullscreen Alacritty windows. It launches one window per monitor and dismisses on any keyboard or mouse input.
 
 ## Dependencies
 
