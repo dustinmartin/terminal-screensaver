@@ -1,0 +1,29 @@
+#!/bin/bash
+# Launch screensaver - one fullscreen Alacritty per monitor
+
+export PATH="$HOME/.local/bin:$PATH"
+
+if ! command -v tte &>/dev/null; then
+  echo "tte not found. Install: pipx install terminaltexteffects" >&2
+  exit 1
+fi
+
+pgrep -f "class=org.screensaver" && exit 0
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+STATE_FILE=~/.local/state/screensaver/toggles/screensaver-off
+
+if [[ -f "$STATE_FILE" ]] && [[ $1 != "force" ]]; then
+  exit 1
+fi
+
+MONITOR_COUNT=$(xrandr --listmonitors 2>/dev/null | grep -c "^ " || echo 1)
+
+for i in $(seq 1 "$MONITOR_COUNT"); do
+  alacritty \
+    --class "org.screensaver,org.screensaver" \
+    --config-file "$SCRIPT_DIR/config/alacritty-screensaver.toml" \
+    -e "$SCRIPT_DIR/bin/screensaver-cmd" &
+done
+
+wait

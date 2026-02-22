@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cat *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(tsc *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Edit",
+      "Write",
+      "NotebookEdit"
+    ],
+    "deny": []
+  }
+}
