@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Screensaver Idle Watcher
-Exec=xss-lock -- /home/dustinmartin/Projects/screensaver/bin/screensaver-launch
+Exec=/home/dustinmartin/Projects/screensaver/bin/screensaver-idle-watch
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true

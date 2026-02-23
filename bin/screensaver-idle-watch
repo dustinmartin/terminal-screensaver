@@ -1,0 +1,24 @@
+#!/bin/bash
+# Watch for idle using Mutter's IdleMonitor (Wayland-native, no X11 dependency)
+# Polls idle time every 5s and launches screensaver when threshold is reached
+
+TIMEOUT_MS=${SCREENSAVER_TIMEOUT_MS:-300000}  # 5 minutes default
+POLL_INTERVAL=5
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+get_idle_ms() {
+  gdbus call --session \
+    --dest org.gnome.Mutter.IdleMonitor \
+    --object-path /org/gnome/Mutter/IdleMonitor/Core \
+    --method org.gnome.Mutter.IdleMonitor.GetIdletime 2>/dev/null | tr -dc '0-9'
+}
+
+while true; do
+  idle_ms=$(get_idle_ms)
+  if [[ -n "$idle_ms" ]] && [[ "$idle_ms" -ge "$TIMEOUT_MS" ]]; then
+    "$SCRIPT_DIR/bin/screensaver-launch"
+    sleep "$POLL_INTERVAL"
+  fi
+  sleep "$POLL_INTERVAL"
+done
