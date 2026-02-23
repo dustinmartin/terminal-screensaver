@@ -11,7 +11,7 @@ get_idle_ms() {
   gdbus call --session \
     --dest org.gnome.Mutter.IdleMonitor \
     --object-path /org/gnome/Mutter/IdleMonitor/Core \
-    --method org.gnome.Mutter.IdleMonitor.GetIdletime 2>/dev/null | tr -dc '0-9'
+    --method org.gnome.Mutter.IdleMonitor.GetIdletime 2>/dev/null | awk '{print $2}' | tr -dc '0-9'
 }
 
 while true; do
