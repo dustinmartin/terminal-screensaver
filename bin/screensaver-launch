@@ -8,7 +8,7 @@ if ! command -v tte &>/dev/null; then
   exit 1
 fi
 
-pgrep -f "class=org.screensaver" && exit 0
+pgrep -f "[c]lass=org.screensaver" && exit 0
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 STATE_FILE=~/.local/state/screensaver/toggles/screensaver-off
@@ -16,6 +16,18 @@ STATE_FILE=~/.local/state/screensaver/toggles/screensaver-off
 if [[ -f "$STATE_FILE" ]] && [[ $1 != "force" ]]; then
   exit 1
 fi
+
+# Save current Do Not Disturb state and enable it to suppress notification banners
+PREV_SHOW_BANNERS=$(gsettings get org.gnome.desktop.notifications show-banners 2>/dev/null)
+gsettings set org.gnome.desktop.notifications show-banners false 2>/dev/null
+
+cleanup() {
+  if [[ -n "$PREV_SHOW_BANNERS" ]]; then
+    gsettings set org.gnome.desktop.notifications show-banners "$PREV_SHOW_BANNERS" 2>/dev/null
+  fi
+  pkill -f "[c]lass=org.screensaver" 2>/dev/null
+}
+trap cleanup EXIT
 
 MONITOR_COUNT=$(xrandr --listmonitors 2>/dev/null | grep -c "^ " || echo 1)
 
