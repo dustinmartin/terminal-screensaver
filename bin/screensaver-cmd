@@ -21,6 +21,10 @@ printf '\e[?1000h\e[?1003h'        # Enable mouse tracking
 
 tty=$(tty 2>/dev/null)
 
+# Ignore input for the first 2 seconds (window creation and focus events
+# generate mouse tracking data that would otherwise cause an immediate exit)
+GRACE_END=$(( SECONDS + 2 ))
+
 while true; do
   tte -i "$SCREENSAVER_TXT" \
     --frame-rate 120 --canvas-width 0 --canvas-height 0 \
@@ -30,7 +34,9 @@ while true; do
 
   while pgrep -t "${tty#/dev/}" -x tte >/dev/null; do
     if read -n1 -t 1; then
-      exit_screensaver
+      if (( SECONDS >= GRACE_END )); then
+        exit_screensaver
+      fi
     fi
   done
 done

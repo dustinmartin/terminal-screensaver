@@ -10,7 +10,14 @@ fi
 
 OS=$(uname -s)
 
-pgrep -f "[a]lacritty.*screensaver-cmd" &>/dev/null && exit 0
+# Use a lock file to prevent concurrent instances (kernel releases on process exit)
+if [[ "$OS" == "Linux" ]]; then
+  LOCK_FILE="${XDG_RUNTIME_DIR:-/tmp}/screensaver.lock"
+  exec 9>"$LOCK_FILE"
+  flock -n 9 || exit 0
+else
+  pgrep -f "[a]lacritty.*screensaver-cmd" &>/dev/null && exit 0
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 STATE_FILE=~/.local/state/screensaver/toggles/screensaver-off
@@ -25,11 +32,15 @@ if [[ "$OS" == "Linux" ]]; then
   gsettings set org.gnome.desktop.notifications show-banners false 2>/dev/null
 fi
 
+PIDS=()
+
 cleanup() {
   if [[ "$OS" == "Linux" ]] && [[ -n "$PREV_SHOW_BANNERS" ]]; then
     gsettings set org.gnome.desktop.notifications show-banners "$PREV_SHOW_BANNERS" 2>/dev/null
   fi
-  pkill -f "[a]lacritty.*screensaver-cmd" 2>/dev/null
+  for pid in "${PIDS[@]}"; do
+    kill "$pid" 2>/dev/null
+  done
 }
 trap cleanup EXIT
 
@@ -51,6 +62,7 @@ for i in $(seq 1 "$MONITOR_COUNT"); do
       --config-file "$SCRIPT_DIR/config/alacritty-screensaver.toml" \
       -e "$SCRIPT_DIR/bin/screensaver-cmd" &
   fi
+  PIDS+=($!)
 done
 
-wait
+wait -n
