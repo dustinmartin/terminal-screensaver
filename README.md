@@ -1,22 +1,13 @@
 # Terminal Screensaver
 
-A terminal-based screensaver adapted from [Omarchy](https://github.com/basecamp/omarchy) and modified to work on macOS and Linux (Ubuntu/GNOME). Uses [TerminalTextEffects (TTE)](https://github.com/ChrisBuilds/terminaltexteffects) to display animated text effects in fullscreen Alacritty windows. It launches one window per monitor and dismisses on any keyboard or mouse input.
+A terminal-based screensaver adapted from [Omarchy](https://github.com/basecamp/omarchy) and modified to work on Ubuntu-based distros. Uses [TerminalTextEffects (TTE)](https://github.com/ChrisBuilds/terminaltexteffects) to display animated text effects in fullscreen Alacritty windows. It launches one window per monitor and dismisses on any keyboard or mouse input.
 
 ## Dependencies
 
-### Both platforms
-
 - [Alacritty](https://alacritty.org/) - terminal emulator
 - [TerminalTextEffects (TTE)](https://github.com/ChrisBuilds/terminaltexteffects) - text animation engine
-
-### Linux only
-
 - `xrandr` - for multi-monitor detection
 - `notify-send` - for toggle notifications (usually part of `libnotify`)
-
-### macOS only
-
-No additional dependencies — idle detection (`ioreg`), monitor counting (`system_profiler`), and notifications (`osascript`) are all built-in.
 
 ## Installation
 
@@ -33,29 +24,13 @@ No additional dependencies — idle detection (`ioreg`), monitor counting (`syst
    pipx install terminaltexteffects
    ```
 
-3. Set up idle-triggered activation:
-
-   **Linux (GNOME):**
-
-   Copy the autostart entry and update the path:
+3. Set up idle-triggered activation by copying the autostart entry and updating the path:
 
    ```sh
    cp autostart/screensaver-idle.desktop ~/.config/autostart/
    ```
 
    Edit `~/.config/autostart/screensaver-idle.desktop` and update the `Exec=` path to point to your cloned location.
-
-   **macOS:**
-
-   Copy the LaunchAgent plist, replace the placeholder path, and load it:
-
-   ```sh
-   cp autostart/com.screensaver.idle-watch.plist ~/Library/LaunchAgents/
-   sed -i '' "s|SCREENSAVER_PATH|$(pwd)|g" ~/Library/LaunchAgents/com.screensaver.idle-watch.plist
-   launchctl load ~/Library/LaunchAgents/com.screensaver.idle-watch.plist
-   ```
-
-   To unload later: `launchctl unload ~/Library/LaunchAgents/com.screensaver.idle-watch.plist`
 
 ## Usage
 

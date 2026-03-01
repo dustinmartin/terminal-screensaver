@@ -1,24 +1,17 @@
 #!/bin/bash
-# Watch for idle and launch screensaver when threshold is reached
-# Linux: uses Mutter's IdleMonitor (Wayland-native)
-# macOS: uses IOHIDSystem idle time
+# Watch for idle using Mutter's IdleMonitor (Wayland-native, no X11 dependency)
+# Polls idle time every 5s and launches screensaver when threshold is reached
 
 TIMEOUT_MS=${SCREENSAVER_TIMEOUT_MS:-300000}  # 5 minutes default
 POLL_INTERVAL=5
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-OS=$(uname -s)
 
 get_idle_ms() {
-  if [[ "$OS" == "Darwin" ]]; then
-    idle_ns=$(ioreg -c IOHIDSystem | awk '/HIDIdleTime/ {print $NF; exit}')
-    echo $(( idle_ns / 1000000 ))
-  else
-    gdbus call --session \
-      --dest org.gnome.Mutter.IdleMonitor \
-      --object-path /org/gnome/Mutter/IdleMonitor/Core \
-      --method org.gnome.Mutter.IdleMonitor.GetIdletime 2>/dev/null | awk '{print $2}' | tr -dc '0-9'
-  fi
+  gdbus call --session \
+    --dest org.gnome.Mutter.IdleMonitor \
+    --object-path /org/gnome/Mutter/IdleMonitor/Core \
+    --method org.gnome.Mutter.IdleMonitor.GetIdletime 2>/dev/null | awk '{print $2}' | tr -dc '0-9'
 }
 
 while true; do
