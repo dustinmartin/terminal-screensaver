@@ -64,3 +64,4 @@ Press any key or move the mouse to exit the screensaver.
 - **Alacritty appearance** - Modify `config/alacritty-screensaver.toml` to change font size, colors, or window settings.
 - **TTE options** - Edit `bin/screensaver-cmd` to change the frame rate, exclude specific effects, or pin a single effect instead of using `--random-effect`.
 - **Idle timeout** - Set `SCREENSAVER_TIMEOUT_MS` environment variable (default: 300000 = 5 minutes).
+- **Effect watchdog** - Set `SCREENSAVER_EFFECT_TIMEOUT_SECONDS` to restart any single TTE effect that runs too long (default: 120 seconds, set to 0 to disable).
