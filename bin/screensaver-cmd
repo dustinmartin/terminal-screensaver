@@ -5,10 +5,19 @@ export PATH="$HOME/.local/bin:$PATH"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCREENSAVER_TXT="$SCRIPT_DIR/config/screensaver.txt"
+FRAME_RATE=${SCREENSAVER_FRAME_RATE:-15}
+if ! [[ "$FRAME_RATE" =~ ^[0-9]+$ ]]; then
+  FRAME_RATE=15
+fi
 MAX_EFFECT_SECONDS=${SCREENSAVER_EFFECT_TIMEOUT_SECONDS:-120}
 if ! [[ "$MAX_EFFECT_SECONDS" =~ ^[0-9]+$ ]]; then
   MAX_EFFECT_SECONDS=120
 fi
+MAX_SESSION_SECONDS=${SCREENSAVER_SESSION_TIMEOUT_SECONDS:-3600}
+if ! [[ "$MAX_SESSION_SECONDS" =~ ^[0-9]+$ ]]; then
+  MAX_SESSION_SECONDS=3600
+fi
+SESSION_STARTED=$SECONDS
 TTE_PID=""
 ORIGINAL_STTY=""
 CLEANED_UP=0
@@ -79,9 +88,15 @@ printf '\e[?1000h\e[?1003h'        # Enable mouse tracking
 GRACE_END=$(( SECONDS + 2 ))
 
 while true; do
+  # Do not keep Alacritty/TTE rendering forever; long idle sessions should
+  # eventually hand control back to the desktop.
+  if (( MAX_SESSION_SECONDS > 0 && SECONDS - SESSION_STARTED >= MAX_SESSION_SECONDS )); then
+    exit_screensaver
+  fi
+
   clear
   tte -i "$SCREENSAVER_TXT" \
-    --frame-rate 30 --canvas-width 0 --canvas-height 0 \
+    --frame-rate "$FRAME_RATE" --canvas-width 0 --canvas-height 0 \
     --reuse-canvas --anchor-canvas c --anchor-text c \
     --random-effect --exclude-effects dev_worm \
     --no-eol --no-restore-cursor &
@@ -99,6 +114,10 @@ while true; do
     if (( MAX_EFFECT_SECONDS > 0 && SECONDS - EFFECT_STARTED >= MAX_EFFECT_SECONDS )); then
       stop_tte
       break
+    fi
+
+    if (( MAX_SESSION_SECONDS > 0 && SECONDS - SESSION_STARTED >= MAX_SESSION_SECONDS )); then
+      exit_screensaver
     fi
   done
 

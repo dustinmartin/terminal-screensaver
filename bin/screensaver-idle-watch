@@ -3,7 +3,18 @@
 # Polls idle time every 5s and launches screensaver when threshold is reached
 
 TIMEOUT_MS=${SCREENSAVER_TIMEOUT_MS:-300000}  # 5 minutes default
-POLL_INTERVAL=5
+POLL_INTERVAL=${SCREENSAVER_POLL_INTERVAL_SECONDS:-5}
+RESET_IDLE_MS=${SCREENSAVER_RESET_IDLE_MS:-1000}
+
+if ! [[ "$TIMEOUT_MS" =~ ^[0-9]+$ ]]; then
+  TIMEOUT_MS=300000
+fi
+if ! [[ "$POLL_INTERVAL" =~ ^[0-9]+$ ]] || [[ "$POLL_INTERVAL" -eq 0 ]]; then
+  POLL_INTERVAL=5
+fi
+if ! [[ "$RESET_IDLE_MS" =~ ^[0-9]+$ ]]; then
+  RESET_IDLE_MS=1000
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -14,11 +25,28 @@ get_idle_ms() {
     --method org.gnome.Mutter.IdleMonitor.GetIdletime 2>/dev/null | awk '{print $2}' | tr -dc '0-9'
 }
 
+wait_for_activity() {
+  local idle_ms
+
+  # Run at most one screensaver per idle episode. If a watchdog closes the
+  # animation while the machine is still idle, do not relaunch in a loop.
+  while true; do
+    idle_ms=$(get_idle_ms)
+    if [[ -z "$idle_ms" ]]; then
+      return 0
+    fi
+    if [[ -n "$idle_ms" ]] && [[ "$idle_ms" -le "$RESET_IDLE_MS" ]]; then
+      return 0
+    fi
+    sleep "$POLL_INTERVAL"
+  done
+}
+
 while true; do
   idle_ms=$(get_idle_ms)
   if [[ -n "$idle_ms" ]] && [[ "$idle_ms" -ge "$TIMEOUT_MS" ]]; then
     "$SCRIPT_DIR/bin/screensaver-launch"
-    sleep "$POLL_INTERVAL"
+    wait_for_activity
   fi
   sleep "$POLL_INTERVAL"
 done

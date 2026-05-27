@@ -7,6 +7,9 @@ cursor = "0x000000"
 [font]
 size = 18.0
 
+[scrolling]
+history = 0
+
 [window]
 startup_mode = "Fullscreen"
 decorations = "None"
